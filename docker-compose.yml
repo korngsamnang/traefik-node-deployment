@@ -1,0 +1,50 @@
+services:
+    app:
+        image: ${IMAGE_NAME}:${IMAGE_TAG}
+        restart: always
+        networks:
+            - app-network
+        healthcheck:
+            test: ["CMD", "wget", "--spider", "http://localhost:3000"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 30s
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.app.rule=Host(`todayinternet.systems`)"
+            - "traefik.http.services.app.loadbalancer.server.port=3000"
+            - "traefik.http.routers.app.entrypoints=websecure"
+            - "traefik.http.routers.app.tls.certresolver=letsencrypt"
+            - "traefik.http.routers.app.middlewares=compression@docker"
+            - "traefik.http.middlewares.compression.compress=true"
+
+    traefik:
+        image: traefik:v2.10
+        container_name: traefik
+        restart: always
+        ports:
+            - "80:80"
+            - "443:443"
+        networks:
+            - app-network
+        command:
+            - "--api.dashboard=true"
+            - "--providers.docker=true"
+            - "--providers.docker.exposedbydefault=false"
+            - "--entrypoints.web.address=:80"
+            - "--entrypoints.websecure.address=:443"
+            - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+            - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+            - "--certificatesresolvers.letsencrypt.acme.email=korngsamnang168@gmail.com"
+            - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+        volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock:ro"
+            - "letsencrypt:/letsencrypt"
+
+networks:
+    app-network:
+        driver: bridge
+
+volumes:
+    letsencrypt:

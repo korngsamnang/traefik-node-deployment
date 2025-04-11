@@ -1,0 +1,25 @@
+node_modules/
+npm-debug.log
+yarn-error.log
+
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+
+
+.DS_Store
+Thumbs.db
+
+
+.env
+.env.local
+
+# Logs
+*.log
